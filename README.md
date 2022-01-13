@@ -1,2 +1,2 @@
 # BinanceHistoricalData.jl
- download binance historical data using julia
+download binance historical data using julia
