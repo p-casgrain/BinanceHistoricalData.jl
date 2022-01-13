@@ -1,7 +1,11 @@
 if isinteractive()
     using Dates, DataFrames, Plots
-    using ZipFile, CSV, DataFrames, Chain, DataFramesMeta
+    using ZipFile, CSV
+    using DataFrames, Chain, DataFramesMeta
+    using Base.Iterators: take, zip, enumerate
+    using BinanceHistoricalData
 
+    # Get list of desired symbols
     full_sym_df_raw = BinanceHistoricalData.symbol_info() |> DataFrame
     grab_coins = [:BTC,:ETH,:SOL,:ADA,:XRP,:DOT,:AVAX,:LUNA,:USDT,:USDC]
     grab_coins_pairs_regex = Regex("($(join(grab_coins,"|")))($(join(grab_coins,"|")))")
@@ -14,46 +18,41 @@ if isinteractive()
             :isMarginTradingAllowed => :margintrading 
             ; renamecols = false
             )
-        @subset( 
-            @byrow (:status .== "TRADING") && 
-            occursin(grab_coins_pairs_regex,:symbol)  
-            )
+        @subset( @byrow (:status == "TRADING") && occursin(grab_coins_pairs_regex,:symbol)  )
+        # second bit lists out all spot and futures pairs
+        stack([:spottrading,:margintrading],variable_name=:sym_type)
+        @subset(@byrow :value == true)
+        select(Not(:value))
+        @transform( @byrow :sym_type = ( occursin("spot",:sym_type) ? "spot" : "futures") )
     end
-
-    spot_sym_list = ["BTCTUSD"]
 
     base_dl_path = "/Users/pcasgrain/Desktop/binance_data/zip/"
 
     fetch_monthly = Date(2018,01,01):Month(1):(floor(today(),Month)-Month(1)) # full months
-    fetch_daily = floor(today(),Month):Day(1):today() # remaining days
+    fetch_daily = floor(today(),Month):Day(1):(today()-1) # remaining days
 
     date_df = vcat( 
-        DataFrame(date=fetch_monthly,agg=:monthly), 
-        DataFrame(date=fetch_daily,agg=:daily)
+        DataFrame(date=fetch_monthly,agg="monthly"), 
+        DataFrame(date=fetch_daily,agg="daily")
     )
 
-    @sync for (sym,status,spottrading,margintrading) in eachrow(sym_df)
-        @async for (dt,agg) in eachrow(fetch_monthly)
-            @info "fetching $sym data at date $dt"
-            if spottrading
-                try
-                    BinanceHistoricalData.download_klines(sym,dt,base_dl_path;agg_level="spot",sym_type=sym_type,verbose=false)
-                    @info "spot-$sym-$dt-$agg - Download Succeeded"
-                catch
-                    @info "spot-$sym-$dt-$agg - Download Failed"
-                end
+    @sync for (sym,status,sym_type) in take( eachrow(sym_df) , 1 )
+        @async for (dt,agg) in eachrow(date_df)
+            try
+                BinanceHistoricalData.download_klines(sym,dt,joinpath(base_dl_path,"kline/");agg_level=agg,sym_type=sym_type,verbose=false)
+                @info "kline $sym_type|$sym|$dt|$agg - Download Succeeded"
+            catch e
+                @info "kline $sym_type|$sym|$dt|$agg - Download Failed" error=e
             end
-            if margintrading
-                try
-                    BinanceHistoricalData.download_klines(sym,dt,base_dl_path;agg_level="futures",sym_type=sym_type,verbose=false)
-                    @info "futures-$sym-$dt-$agg - Download Succeeded"
-                catch
-                    @info "futures-$sym-$dt-$agg - Download Failed"
-                end
+            try
+                BinanceHistoricalData.download_aggtrades(sym,dt,joinpath(base_dl_path,"aggtrade/");agg_level=agg,sym_type=sym_type,verbose=false)
+                @info "aggtrade $sym_type|$sym|$dt|$agg - Download Succeeded"
+            catch e
+                @info "aggtrade $sym_type|$sym|$dt|$agg - Download Failed" error=e
             end
+
         end
     end
-
 
 
     master_df = DataFrame()

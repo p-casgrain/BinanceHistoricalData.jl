@@ -3,4 +3,4 @@
 *.jl.mem
 deps/deps.jl
 Manifest.toml
-examples/example1.jl
+./examples/example1.jl

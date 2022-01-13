@@ -53,18 +53,18 @@ module BinanceHistoricalData
     See [this link](https://github.com/binance/binance-public-data) for more details
     on the CSV file's contents.    
     """
-    function download_aggtrades(sym,date::Date,write_dir::AbstractString;sym_type="spot",agg_level="monthly",verbose=true)
+    function download_aggtrades(sym,date::Date,write_dir::AbstractString; sym_type="spot",agg_level="monthly",verbose=true)
         # Check arguments
         (sym_type ∈ SYMTYPE) || error("must have sym_type ∈ $SYMTYPE")
         (agg_level ∈ AGGLEVELS) || error("must have agg_level ∈ $AGGLEVELS")
         # Format information into strings
         sym_str = String(sym)
-        date_str = (agg_level == :monthly) ? Dates.format(Date(date),"yyyy-mm") : Dates.format(Date(date),"yyyy-mm-dd") 
+        date_str = (agg_level == "monthly") ? Dates.format(Date(date),"yyyy-mm") : Dates.format(Date(date),"yyyy-mm-dd") 
         # Put together full data url
-        data_url = "https://data.binance.vision/data/spot/monthly/aggTrades/$sym_str/$sym_str-aggTrades-$date_str.zip"
+        data_url = "https://data.binance.vision/data/spot/$agg_level/aggTrades/$sym_str/$sym_str-aggTrades-$date_str.zip"
         # Download the data
-        verbose && @info "[$(now())] - Fetching binance historical aggtrade data" sym, date, freq, sym_type, agg_level
-        return Downloads.download(data_url,joinpath(write_dir,"aggTrades-$sym_type-$sym_str-$freq-$date_str.zip"))
+        verbose && @info "[$(now())] - Fetching binance historical aggtrade data" sym, date, sym_type, agg_level
+        return Downloads.download(data_url,joinpath(write_dir,"aggTrades-$sym_type-$sym_str-$date_str.zip"))
     end
 
     """
