@@ -4,7 +4,7 @@ See function docstrings and [the binance public data repo](https://github.com/bi
 
 Install using `import Pkg; Pkg.add("https://github.com/p-casgrain/BinanceHistoricalData.jl")`.
 Example usage:
-julia```
+```
 using BinanceHistoricalData
 using CSV, ZipFile, DataFrames, DataFramesMeta, Dates
 
