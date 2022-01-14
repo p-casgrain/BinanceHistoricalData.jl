@@ -26,31 +26,30 @@ if isinteractive()
         @transform( @byrow :sym_type = ( occursin("spot",:sym_type) ? "spot" : "futures") )
     end
 
-    base_dl_path = "/Users/pcasgrain/Desktop/binance_data/zip/"
+    base_dl_path = "~/Desktop/binance_data/zip/"
 
     fetch_monthly = Date(2018,01,01):Month(1):(floor(today(),Month)-Month(1)) # full months
-    fetch_daily = floor(today(),Month):Day(1):(today()-1) # remaining days
+    fetch_daily = floor(today(),Month):Day(1):(today()-Day(1)) # remaining days
 
     date_df = vcat( 
         DataFrame(date=fetch_monthly,agg="monthly"), 
         DataFrame(date=fetch_daily,agg="daily")
     )
 
-    @sync for (sym,status,sym_type) in take( eachrow(sym_df) , 1 )
+    @sync for (sym,status,sym_type) in eachrow(sym_df)
         @async for (dt,agg) in eachrow(date_df)
             try
-                BinanceHistoricalData.download_klines(sym,dt,joinpath(base_dl_path,"kline/");agg_level=agg,sym_type=sym_type,verbose=false)
+                download_klines(sym,dt,joinpath(base_dl_path,"kline/");agg_level=agg,sym_type=sym_type,verbose=false)
                 @info "kline $sym_type|$sym|$dt|$agg - Download Succeeded"
             catch e
                 @info "kline $sym_type|$sym|$dt|$agg - Download Failed" error=e
             end
-            try
-                BinanceHistoricalData.download_aggtrades(sym,dt,joinpath(base_dl_path,"aggtrade/");agg_level=agg,sym_type=sym_type,verbose=false)
-                @info "aggtrade $sym_type|$sym|$dt|$agg - Download Succeeded"
-            catch e
-                @info "aggtrade $sym_type|$sym|$dt|$agg - Download Failed" error=e
-            end
-
+            # try
+            #     download_aggtrades(sym,dt,joinpath(base_dl_path,"aggtrade/");agg_level=agg,sym_type=sym_type,verbose=false)
+            #     @info "aggtrade $sym_type|$sym|$dt|$agg - Download Succeeded"
+            # catch e
+            #     @info "aggtrade $sym_type|$sym|$dt|$agg - Download Failed" error=e
+            # end
         end
     end
 
