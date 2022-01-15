@@ -3,7 +3,9 @@ Julia package for downloading binance historical data using Julia.
 See function docstrings and [the binance public data repo](https://github.com/binance/binance-public-data) for more information.
 
 ### Install
-```import Pkg; Pkg.add("https://github.com/p-casgrain/BinanceHistoricalData.jl")```
+```julia 
+import Pkg; Pkg.add("https://github.com/p-casgrain/BinanceHistoricalData.jl")
+```
 ### Example
 ```julia
 using BinanceHistoricalData

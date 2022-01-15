@@ -1,5 +1,5 @@
 module BinanceHistoricalData
-    using Dates, HTTP, Downloads, JSON3
+    using Dates, HTTP, JSON3
     export download_klines, download_aggtrades, symbol_info
 
     const FREQS = ["1m","5m","15m","30m","1h","2h","4h","6h","8h","12h","1d","3d","1w","1mo"]
@@ -36,7 +36,7 @@ module BinanceHistoricalData
         data_url = "https://data.binance.vision/data/$sym_type/$agg_level/klines/$sym/$freq/$sym_str-$freq-$date_str.zip"
         # Download the data
         verbose && @info "[$(now())] - Fetching binance historical kline data" sym, date, freq, sym_type, agg_level
-        return Downloads.download(data_url,joinpath(write_dir,"kline-$sym_type-$sym_str-$freq-$date_str.zip"))
+        return download(data_url,joinpath(write_dir,"kline-$sym_type-$sym_str-$freq-$date_str.zip"))
     end
       
     """
@@ -64,7 +64,7 @@ module BinanceHistoricalData
         data_url = "https://data.binance.vision/data/spot/$agg_level/aggTrades/$sym_str/$sym_str-aggTrades-$date_str.zip"
         # Download the data
         verbose && @info "[$(now())] - Fetching binance historical aggtrade data" sym, date, sym_type, agg_level
-        return Downloads.download(data_url,joinpath(write_dir,"aggTrades-$sym_type-$sym_str-$date_str.zip"))
+        return download(data_url,joinpath(write_dir,"aggTrades-$sym_type-$sym_str-$date_str.zip"))
     end
 
     """
