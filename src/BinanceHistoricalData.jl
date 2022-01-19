@@ -1,6 +1,6 @@
 module BinanceHistoricalData
     using Dates, HTTP, JSON3
-    export download_klines, download_aggtrades, symbol_info
+    export download_klines_spot, download_aggtrades_spot, symbol_info
 
     const FREQS = ["1m","5m","15m","30m","1h","2h","4h","6h","8h","12h","1d","3d","1w","1mo"]
     const AGGLEVELS = ["monthly","daily"]
@@ -10,23 +10,21 @@ module BinanceHistoricalData
     const tbl_colnames_aggtrades = ["AggTradeId","Price","Quantity","FirstTradeId","LastTradeId","Timestamp","IsMarketMakerBuyer","IsTradeBestPriceMatch"]
 
     """
-        download_klines(sym,date::Date,write_dir;freq="1m",sym_type="spot",agg_level="monthly",verbose=true)
+        download_klines_spot(sym,date::Date,write_dir;freq="1m",agg_level="monthly",verbose=true)
 
     Download historical klines data starting on `date` for symbol `sym` to directory `write_dir`.
     
     Other argument descriptions:
      - Data frequency `freq`. (See `BinanceHistoricalData.FREQS` for possible values )
      - Data aggregation level `agg_level`. (See `BinanceHistoricalData.AGGLEVELS` for possible values )
-     - Symbol type `sym_type`. (See `BinanceHistoricalData.SYMTYPE` for possible values )
     
     Downloads zipped CSV with column names `BinanceHistoricalData.tbl_colnames_klines`. 
     See [this link](https://github.com/binance/binance-public-data) for more details
     on the CSV file's contents.
 
     """
-    function download_klines(sym,date::Date,write_dir;freq="1m",sym_type="spot",agg_level="monthly",verbose=true)
+    function download_klines_spot(sym,date::Date,write_dir;freq="1m",agg_level="monthly",verbose=true)
         # Check arguments
-        (sym_type ∈ SYMTYPE) || error("must have sym_type ∈ $SYMTYPE")
         (agg_level ∈ AGGLEVELS) || error("must have agg_level ∈ $AGGLEVELS")
         (freq ∈ FREQS) || error("must have freq ∈ $FREQS")
         # Format information into strings
@@ -40,22 +38,20 @@ module BinanceHistoricalData
     end
       
     """
-        download_aggtrades(sym,date::Date,write_dir::AbstractString;sym_type="spot",agg_level="monthly",verbose=true)
+        download_aggtrades_spot(sym,date::Date,write_dir::AbstractString;sym_type="spot",agg_level="monthly",verbose=true)
 
     Download historical aggregate trade data starting on `date` for symbol `sym` to directory `write_dir`.
     
     Other argument descriptions:
      - Data frequency `freq`. (See `BinanceHistoricalData.FREQS` for possible values )
      - Data aggregation level `agg_level`. (See `BinanceHistoricalData.AGGLEVELS` for possible values )
-     - Symbol type `sym_type`. (See `BinanceHistoricalData.SYMTYPE` for possible values )
     
     Downloads zipped CSV with column names `BinanceHistoricalData.tbl_colnames_aggtrades`. 
     See [this link](https://github.com/binance/binance-public-data) for more details
     on the CSV file's contents.    
     """
-    function download_aggtrades(sym,date::Date,write_dir::AbstractString; sym_type="spot",agg_level="monthly",verbose=true)
+    function download_aggtrades_spot(sym,date::Date,write_dir::AbstractString; sym_type="spot",agg_level="monthly",verbose=true)
         # Check arguments
-        (sym_type ∈ SYMTYPE) || error("must have sym_type ∈ $SYMTYPE")
         (agg_level ∈ AGGLEVELS) || error("must have agg_level ∈ $AGGLEVELS")
         # Format information into strings
         sym_str = String(sym)
