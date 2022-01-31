@@ -31,6 +31,7 @@ module BinanceHistoricalData
         sym_str = uppercase(String(sym))
         date_str = (agg_level == "monthly") ? Dates.format(Date(date),"yyyy-mm") : Dates.format(Date(date),"yyyy-mm-dd") 
         # Put together full data url
+        sym_type = "spot"
         data_url = "https://data.binance.vision/data/$sym_type/$agg_level/klines/$sym/$freq/$sym_str-$freq-$date_str.zip"
         # Download the data
         verbose && @info "[$(now())] - Fetching binance historical kline data" sym, date, freq, sym_type, agg_level
